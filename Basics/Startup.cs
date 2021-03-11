@@ -1,8 +1,13 @@
 using Basics.AuthorizationRequirements;
+using Basics.Controllers;
+using Basics.CustomPolicyProvider;
+using Basics.Transformer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -40,11 +45,28 @@ namespace IdentityExample
                 {
                     policyBuilder.RequireCustomClaim(ClaimTypes.DateOfBirth);
                 });
+
+                config.AddPolicy("Age18", policy => policy.AddRequirements(new AgeRequireClaim(18)));
             });
 
+            services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
+            services.AddScoped<IAuthorizationHandler, SecurityLevelHandler>();
             services.AddScoped<IAuthorizationHandler, CustomRequireClaimHandler>();
+            services.AddScoped<IAuthorizationHandler, CookieJarAuthorizationHandler>();
+            services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
+            services.AddScoped<IAuthorizationHandler, AgeRequireClaimHandler>();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(config =>
+            {
+                // global authorization filter
+                var defaultAuthBuilder = new AuthorizationPolicyBuilder();
+                var defaultAuthPolicy = defaultAuthBuilder
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(ClaimTypes.DateOfBirth)
+                    .Build();
+
+                //config.Filters.Add(new AuthorizeFilter(defaultAuthPolicy));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
