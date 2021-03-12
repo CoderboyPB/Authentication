@@ -47,6 +47,7 @@ namespace IdentityExample
                 });
 
                 config.AddPolicy("Age18", policy => policy.AddRequirements(new AgeRequireClaim(18)));
+                config.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
             });
 
             services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
@@ -67,6 +68,15 @@ namespace IdentityExample
 
                 //config.Filters.Add(new AuthorizeFilter(defaultAuthPolicy));
             });
+
+            services.AddRazorPages()
+                .AddRazorPagesOptions(config =>
+                {
+                    config.Conventions.AuthorizePage("/Razor/Secured");
+                    config.Conventions.AuthorizePage("/Razor/Policy", "Admin");
+                    config.Conventions.AuthorizeFolder("/RazorSecured");
+                    config.Conventions.AllowAnonymousToPage("/RazorSecured/Anon");
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -86,6 +96,7 @@ namespace IdentityExample
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }

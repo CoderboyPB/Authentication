@@ -63,7 +63,8 @@ namespace IdentityExample.Controllers
                 new Claim(ClaimTypes.Email, "Bob@fmail.com"),
                 new Claim("Grandma.Says", "Very nice boi."),
                 new Claim(DynamicPolicies.SecurityLevel, "7"),
-                new Claim(DynamicPolicies.Rank,"Commander")
+                new Claim(DynamicPolicies.Rank,"Commander"),
+                new Claim(ClaimTypes.Role, "Admin")
             };
 
             var licenseClaims = new List<Claim>()
