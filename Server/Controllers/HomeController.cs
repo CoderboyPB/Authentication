@@ -34,7 +34,6 @@ namespace Server.Controllers
 
             var secretBytes = Encoding.UTF8.GetBytes(Constants.Secret);
             var key = new SymmetricSecurityKey(secretBytes);
-
             var algorithm = SecurityAlgorithms.HmacSha256;
 
             var signingCredentials = new SigningCredentials(key, algorithm);
@@ -50,6 +49,12 @@ namespace Server.Controllers
             var jsonToken = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Ok(new { accessToken = jsonToken });
+        }
+
+        public IActionResult Decode(string part)
+        {
+            var bytes = Convert.FromBase64String(part);
+            return Ok(Encoding.UTF8.GetString(bytes));
         }
     }
 }
