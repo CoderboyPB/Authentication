@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -35,8 +36,8 @@ namespace Client
                     config.ClientId = "client_id";
                     config.ClientSecret = "client_secret";
                     config.CallbackPath = "/oauth/callback";
-                    config.AuthorizationEndpoint = "https://localhost:5001/oauth/authorize";
-                    config.TokenEndpoint = "https://localhost:5001/oauth/token";
+                    config.AuthorizationEndpoint = "https://localhost:44362/oauth/authorize";
+                    config.TokenEndpoint = "https://localhost:44362/oauth/token";
 
                     config.SaveTokens = true;
 
@@ -45,7 +46,8 @@ namespace Client
                         OnCreatingTicket = context =>
                         {
                             var access_token = context.AccessToken;
-                            var base64Payload = access_token.Split(".")[1];
+                            var base64Payload = access_token.Split('.')[1];
+                            Debug.Print(base64Payload);
                             var bytes = Convert.FromBase64String(base64Payload);
                             var jsonPayload = Encoding.UTF8.GetString(bytes);
                             var claims = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonPayload);
@@ -55,10 +57,18 @@ namespace Client
                                 context.Identity.AddClaim(new Claim(claim.Key, claim.Value));
                             }
 
+                            if (context.Request.Query.ContainsKey("username"))
+                            {
+                                string username = context.Request.Query["username"];
+                                context.Identity.AddClaim(new Claim(ClaimTypes.Name, username));
+                            }
+
                             return Task.CompletedTask;
                         }
                     };
                 });
+
+            services.AddHttpClient();
 
             services.AddControllersWithViews()
                 .AddRazorRuntimeCompilation();
