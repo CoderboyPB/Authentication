@@ -42,7 +42,6 @@ namespace Server.Controllers
             query.Add("state", state);
             query.Add("username", username);
 
-
             return Redirect($"{redirectUri}{query.ToString()}");
         }
 
@@ -96,6 +95,7 @@ namespace Server.Controllers
             return Redirect(redirect_uri);
         }
 
+        [Authorize]
         public IActionResult Validate()
         {
             if (HttpContext.Request.Query.TryGetValue("access_token", out var accessToken))
